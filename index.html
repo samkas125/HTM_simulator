@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>When Does HTM Beat Locks? | 15-418 Project</title>
+<style>
+  body {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 24px 16px 48px;
+    font-family: Arial, Helvetica, sans-serif;
+    line-height: 1.5;
+    color: #111;
+    background: #fff;
+  }
+  h2 { margin-top: 28px; }
+</style>
+</head>
+<body>
+
+<h1>When Does Hardware Transactional Memory Beat Locks?</h1>
+<p>Samatva (skasat) and Pritha (prithat)</p>
+<p><a href="proposal.pdf">Full proposal (PDF)</a></p>
+
+<h2>URL</h2>
+<p>[project page link]</p>
+
+<h2>Summary</h2>
+<p>We're comparing locks against different hardware transactional memory (HTM) designs by running STAMP benchmarks on gem5 with the CHATS HTM simulator. We change one design choice at a time and look at what limits performance.</p>
+
+<h2>Background</h2>
+<p>HTM runs atomic blocks speculatively. If two transactions conflict, one aborts and retries, and after a few tries it falls back to a lock. We look at three hardware choices:</p>
+<ul>
+  <li><strong>Versioning:</strong> eager (fast commits, slow aborts) vs. lazy (fast aborts, writes stuck in cache)</li>
+  <li><strong>Conflict resolution:</strong> abort the other transaction, wait, or forward the data (CHATS)</li>
+  <li><strong>Capacity:</strong> what happens when a transaction's data doesn't fit in the cache</li>
+</ul>
+<p>Benchmarks: kmeans (small transactions, low and high contention) and vacation (bigger transactions).</p>
+
+<h2>Challenge</h2>
+<ul>
+  <li>Conflicts depend on the data and timing.</li>
+  <li>Shared updates cause lots of cache invalidations.</li>
+  <li>Cache size limits transactions, and false sharing causes extra aborts.</li>
+  <li>Each design just moves the cost somewhere else.</li>
+  <li>Simulation is slow.</li>
+</ul>
+
+<h2>Resources</h2>
+<ul>
+  <li><a href="https://github.com/nikiitin/MICRO24-521">CHATS artifact</a>: gem5 with the HTM designs, STAMP benchmarks, and global-lock versions already built in</li>
+  <li>We write: a per-cluster-lock kmeans, the experiment configs, and stats/plot scripts</li>
+  <li>Machine: x86 Linux with sudo, Docker, and KVM (AWS bare-metal or similar)</li>
+  <li>Backup: stock gem5's Arm HTM model if CHATS doesn't run by Nov 12</li>
+</ul>
+
+<h2>Goals and Deliverables</h2>
+<p><strong>Plan:</strong></p>
+<ul>
+  <li>Get CHATS running and reproduce one result from the paper</li>
+  <li>Four comparisons (locks vs. HTM, conflict resolution, versioning, capacity) on kmeans and vacation at 1 to 16 cores</li>
+  <li>Measure speedup, where time goes, and why transactions abort</li>
+  <li>Check correctness against sequential output</li>
+</ul>
+<p><strong>Stretch:</strong> add genome, get lazy conflict detection working</p>
+<p><strong>If behind:</strong> drop versioning, focus on kmeans</p>
+<p><strong>Poster:</strong> speedup graphs, time breakdowns, abort causes, transaction timelines</p>
+
+<h2>Platform Choice</h2>
+<p>We need to change the hardware itself, and real CPUs only have one fixed HTM design. gem5 models real cache coherence, and CHATS already has the designs we want to compare. STAMP is the standard TM benchmark suite.</p>
+
+<h2>Schedule</h2>
+<ul>
+  <li><strong>Nov 9 to 15:</strong> Proposal, set up machine, get CHATS running</li>
+  <li><strong>Nov 16 to 22:</strong> Conflict resolution and capacity runs on kmeans, write per-cluster-lock kmeans</li>
+  <li><strong>Nov 23 to 29:</strong> Milestone report, locks vs. HTM and versioning runs</li>
+  <li><strong>Nov 30 to Dec 6:</strong> Full core sweeps, charts</li>
+  <li><strong>Dec 7 to 11:</strong> Final report and poster</li>
+</ul>
+
+</body>
+</html>
